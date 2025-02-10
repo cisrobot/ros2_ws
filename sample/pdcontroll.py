@@ -8,7 +8,7 @@ import numpy as np
 log_files = [
     '/home/twins/ros2_ws/src/data/last/arduino_log_01_19_23_48_31_0.5ms.csv',
     '/home/twins/ros2_ws/src/data/last/arduino_log_01_19_23_59_10_1ms.csv',
-    '/home/twins/ros2_ws/src/data/last/arduino_log_01_20_15_02_16_2ms.csv',
+    '/home/twins/ros2_ws/src/data/last/last2ms.csv',
     '/home/twins/ros2_ws/src/data/last/arduino_log_01_20_15_43_21_1.5ms.csv',
 ]
 

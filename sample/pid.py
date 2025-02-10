@@ -4,7 +4,7 @@ import pandas as pd
 import os
 import numpy as np
 
-log_file = '/home/twins/ros2_ws/src/data/last/arduino_log_01_19_23_48_31_0.5ms.csv'
+log_file = '/home/twins/ros2_ws/src/data/last/last2ms.csv'
 
 data = pd.read_csv(log_file)
 
@@ -59,7 +59,7 @@ def plot_and_pwm(data, save_path):
     print(f"그래프가 {save_path}에 저장되었습니다. ")
 
 
-save_path = "/home/twins/ros2_ws/src/data/last"
+save_path = "/home/twins/ros2_ws/src/data/pid_graph"
 save_path1 = "/home/twins/ros2_ws/src/data/last"
 plot_and_save_graph(data, save_path)
 plot_and_pwm(data, save_path1)
