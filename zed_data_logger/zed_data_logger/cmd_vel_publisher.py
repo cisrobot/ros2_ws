@@ -27,7 +27,7 @@ class CmdVelPublisher(Node):
                 elif event.key == pygame.K_d:
                     self.angular_z = max(self.angular_z - 0.5, -1.0)
                 elif event.key == pygame.K_x:
-                    self.linear_x = 0.0
+                    self.linear_x = 1.25
                     self.angular_z = 0.0
 
         # Twist 메시지를 발행

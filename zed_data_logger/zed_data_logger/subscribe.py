@@ -22,12 +22,12 @@ class ArduinoSerialControl(Node):
         self.declare_parameter("log_period_sec", 0.1)
         self.declare_parameter("rcv_period_sec", 0.03)
         self.declare_parameter("control_period_sec", 0.03)
-        self.declare_parameter('steer_rad_lim', 0.4)
+        self.declare_parameter('steer_rad_lim', 0.3631)
         self.declare_parameter("steer_pwm_center", 1477)
         self.declare_parameter("steer_pwm_gap", 300)
         self.declare_parameter("v_pwm_stop", 1530)
         self.declare_parameter("v_pwm_min", 1561)
-        self.declare_parameter("v_pwm_max", 1589)
+        self.declare_parameter("v_pwm_max", 1588)
         self.declare_parameter("v_min", 0.5)    # m/s
         self.declare_parameter("v_max", 2.5)    # m/s
         self.declare_parameter("v_step", 0.5)    # m/s
@@ -46,8 +46,8 @@ class ArduinoSerialControl(Node):
         self.steer_rad_lim = self.get_parameter("steer_rad_lim").get_parameter_value().double_value
         self.steer_pwm_center = self.get_parameter("steer_pwm_center").get_parameter_value().integer_value
         self.steer_pwm_gap = self.get_parameter("steer_pwm_gap").get_parameter_value().integer_value
-        self.steer_pwm_min = self.steer_pwm_center - self.steer_pwm_gap #1186
-        self.steer_pwm_max = self.steer_pwm_center + self.steer_pwm_gap #1786
+        self.steer_pwm_min = self.steer_pwm_center - self.steer_pwm_gap #1177
+        self.steer_pwm_max = self.steer_pwm_center + self.steer_pwm_gap #1777
         self.v_pwm_stop = self.get_parameter("v_pwm_stop").get_parameter_value().integer_value
         self.v_pwm_min = self.get_parameter("v_pwm_min").get_parameter_value().integer_value
         self.v_pwm_max = self.get_parameter("v_pwm_max").get_parameter_value().integer_value
@@ -206,7 +206,8 @@ class ArduinoSerialControl(Node):
                 self.steer_ang= -self.steer_rad_lim
             self.w_call = self.a*self.w_call+(1-self.a)*self.w_curr
             self.pwm_data[0] =self.convert_ang_to_pwm(self.steer_ang)
-        
+
+        #self.pwm_data[0] = 1327 # for testing
         self.get_logger().info(f'linear.x: {round(self.v_call,2)}, angular_z = {round(self.w_call,2)}')
 
         
@@ -219,7 +220,7 @@ class ArduinoSerialControl(Node):
             rclpy.shutdown()
 
     def convert_v_to_pwm(self, vel):
-        f_v = -0.68 + 1.76 * vel -0.98 * (vel**2) + 0.22 * (vel**3)
+        f_v = 0.1481 * vel**3 - 0.7407 * vel**2 + 1.4444 * vel - 0.5556
         ctl_v_pwm = self.v_to_pwm_scale * f_v + self.v_pwm_min
         clamp_ctl_v_pwm = min(max(self.v_pwm_min, ctl_v_pwm), self.v_pwm_max)
         # self.get_logger().info("control vel = %f, (%f)" % (clamp_ctl_v_pwm, ctl_v_pwm))
@@ -227,7 +228,7 @@ class ArduinoSerialControl(Node):
 
 
     def convert_ang_to_pwm(self, ang):
-        f_ang = 2.49 * ang
+        f_ang = 0.9792*ang**3 +2.6250*ang
         ctl_steer_pwm = self.ang_to_pwm_scale * f_ang + self.steer_pwm_center
         clamp_ctl_steer_pwm = min(max(self.steer_pwm_min, ctl_steer_pwm), self.steer_pwm_max)
         # self.get_logger().info("control steer = %f, %f" % (ctl_steer_pwm, clamp_ctl_steer_pwm))
