@@ -14,6 +14,8 @@ def generate_launch_description():
     robot_description = xacro.process_file(xacro_file)
     params = {"robot_description": robot_description.toxml(), "use_sim_time": use_sim_time}
 
+    ekf_config_file = os.path.join(pkg_path, "config", "ekf.yaml")
+    
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -25,5 +27,13 @@ def generate_launch_description():
                 output="screen",
                 parameters=[params],
             ),
+            
+            Node(
+                package="robot_localization",
+                executable="ekf_node",
+                name="ekf_filter_node",
+                output="screen",
+                parameters=[ekf_config_file, {"use_sim_time": use_sim_time}],
+            )
         ]
     )
