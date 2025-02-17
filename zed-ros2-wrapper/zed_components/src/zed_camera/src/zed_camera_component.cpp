@@ -3416,7 +3416,7 @@ void ZedCamera::initPublishers()
   mFusedFixTopic = mPoseTopic + "/fused_fix";
   mOriginFixTopic = mPoseTopic + "/origin_fix";
 
-  mOdomTopic = mTopicRoot + "odom";
+  mOdomTopic ="/camera_odom";
   mOdomPathTopic = mTopicRoot + "path_odom";
   mPosePathTopic = mTopicRoot + "path_map";
 
