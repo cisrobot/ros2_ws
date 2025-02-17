@@ -128,7 +128,7 @@ class ArduinoSerialControl(Node):
 
         self.vel_sub = self.create_subscription(
           Twist, 
-         '/cmd_vel', 
+         '/keyboard_cmd_vel', 
          self.vel_sub_callback, 
          10)
 

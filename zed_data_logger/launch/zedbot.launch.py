@@ -15,10 +15,10 @@ def generate_launch_description():
             name='subscribe_node',
             output='screen'
         ),
-        Node(
+        '''Node(
             package='zed_data_logger',
             executable='cmd_vel_publisher',
             name='cmd_vel_publisher_node',
             output='screen'
-        ),
+        ),'''
     ])

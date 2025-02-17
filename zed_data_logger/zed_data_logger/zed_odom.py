@@ -52,7 +52,7 @@ class ZedDataLogger(Node):
         # Subscriber 설정
         self.subscriber = self.create_subscription(
             Odometry,
-            '/zed/zed_node/odom',  # 구독할 토픽
+            '/camera_odom',  # 구독할 토픽
             self.subscriber_callback,
             10
         )
