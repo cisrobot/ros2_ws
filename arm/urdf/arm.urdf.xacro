@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<robot name="arm" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="support_2_pan_frame_x_length" value="0.045"/>
+  <xacro:property name="pan_2_tilt_x_length" value="0.023"/>
+  <xacro:property name="motor_2_zed_z_length" value="0.075"/>
+  
+
+  <link name="/support_frame"/>
+    
+  <link name="/pan_axis_frame"/>
+    
+  <joint name="joint_fix_1" type="fixed">
+    <parent link="/support_frame"/>
+    <child link="/pan_axis_frame"/>
+    <origin xyz="${support_2_pan_frame_x_length} 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <link name="/motor_pan_frame"/>
+    
+  <joint name="joint_pan" type="continuous">
+    <parent link="/pan_axis_frame"/>
+    <child link="/motor_pan_frame"/>
+    <origin xyz="0 0 0" rpy = "0 0 ${pi/2}"/>    
+    <axis xyz="0 0 -1"/>
+  </joint>
+
+  <link name="/tilt_axis_frame"/>    
+
+  <joint name="joint_fix_2" type="fixed">
+    <parent link="/motor_pan_frame"/>
+    <child link="/tilt_axis_frame"/>
+    <origin xyz="${pan_2_tilt_x_length} 0 0" rpy = "0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <link name="/motor_tilt_frame"/>
+
+  <joint name="joint_tilt" type="continuous">
+    <parent link="/tilt_axis_frame"/>
+    <child link="/motor_tilt_frame"/>   
+    <origin xyz="0 0 0" rpy = "0 -${pi/2} 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <link name="/zed_camera_link"/>
+    
+  <joint name="joint_tilt_2_panel" type="fixed">
+    <parent link="/motor_tilt_frame"/>
+    <child link="/zed_camera_link"/>
+    <origin xyz="0 0 ${motor_2_zed_z_length}" rpy = "0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+</robot>

@@ -1,0 +1,28 @@
+# https://emanual.robotis.com/docs/en/dxl/x/xw430-t333/#drive-mode
+arm_control_node:
+  ros__parameters:
+    # joint_pub_period_ms: 30  # ms (int)
+    joint_pub_period_ms: 5  # ms (int)
+
+    # joint_pan_enable_torque: true
+    joint_pan_enable_torque: false
+
+    # joint_tilt_enable_torque: true
+    joint_tilt_enable_torque: false
+
+    joint_cmd_topic: "/joint_arm_cmd"
+
+    joint_pan_init_ang: 1.57 # rad (double)
+    joint_tilt_init_ang: 1.57 # rad (double)
+
+    dynamixel_port: "/dev/ttyUSB0"
+
+    min_control_gain: 0.5
+    max_control_gain: 0.7
+    max_ang_err: 0.174 # 10deg -> 0.174rad, 15deg -> 0.261rad
+
+    lim_pan_left_ang: 0.78
+    lim_pan_right_ang: 2.35
+    lim_tilt_up_ang: 0.78
+    lim_tilt_down_ang: 2.35
+    

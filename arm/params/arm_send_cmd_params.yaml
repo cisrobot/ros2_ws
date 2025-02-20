@@ -1,0 +1,8 @@
+# https://emanual.robotis.com/docs/en/dxl/x/xw430-t333/#drive-mode
+arm_send_cmd_node:
+  ros__parameters:
+    control_ms: 5
+    joint_arm_cmd_topic: "/joint_arm_cmd"
+    joint_cmd_pan: 1.57
+    joint_cmd_tilt: 1.57
+
