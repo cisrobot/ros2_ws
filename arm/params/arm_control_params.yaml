@@ -4,11 +4,11 @@ arm_control_node:
     # joint_pub_period_ms: 30  # ms (int)
     joint_pub_period_ms: 5  # ms (int)
 
-    # joint_pan_enable_torque: true
-    joint_pan_enable_torque: false
+    joint_pan_enable_torque: true
+    # joint_pan_enable_torque: false
 
-    # joint_tilt_enable_torque: true
-    joint_tilt_enable_torque: false
+    joint_tilt_enable_torque: true
+    # joint_tilt_enable_torque: false
 
     joint_cmd_topic: "/joint_arm_cmd"
 
