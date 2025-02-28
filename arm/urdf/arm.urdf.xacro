@@ -44,11 +44,11 @@
     <axis xyz="0 1 0"/>
   </joint>
 
-  <link name="/zed_camera_link"/>
+  <link name="zed_camera_link"/>
     
   <joint name="joint_tilt_2_panel" type="fixed">
     <parent link="/motor_tilt_frame"/>
-    <child link="/zed_camera_link"/>
+    <child link="zed_camera_link"/>
     <origin xyz="0 0 ${motor_2_zed_z_length}" rpy = "0 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>

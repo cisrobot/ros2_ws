@@ -4,5 +4,6 @@ arm_send_cmd_node:
     control_ms: 5
     joint_arm_cmd_topic: "/joint_arm_cmd"
     joint_cmd_pan: 1.57
+    # joint_cmd_pan: 0.9
     joint_cmd_tilt: 1.57
 
