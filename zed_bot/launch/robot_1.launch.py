@@ -34,6 +34,12 @@ def generate_launch_description():
                 name="ekf_filter_node",
                 output="screen",
                 parameters=[ekf_config_file, {"use_sim_time": use_sim_time}],
-            )
+            ),
+
+            Node(
+                package='tf2_ros',
+                executable='static_transform_publisher',
+                arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom']
+            ),
         ]
     )
