@@ -12,7 +12,7 @@ def generate_launch_description():
         Node(
             package='zed_data_logger',
             executable='subscribe',
-            name='arduino_serial_control',
+            name='subscirber_node',
             output='screen'
         )
     ])

@@ -6,7 +6,7 @@ import pygame
 class CmdVelPublisher(Node):
     def __init__(self):
         super().__init__('cmd_vel_publisher')
-        self.publisher = self.create_publisher(Twist, 'keyboard_cmd_vel', 10)
+        self.publisher = self.create_publisher(Twist, '/cmd_vel', 10)
         self.timer = self.create_timer(0.1, self.publish_cmd_vel)  # 이벤트 주기를 0.1초로 빠르게 설정
         self.linear_x = 0.0
         self.angular_z =0.0

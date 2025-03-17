@@ -25,6 +25,14 @@ class DepthSubscriber(Node):
 
         self.curr_vel_subscriber = self.create_subscription(
             Twist, '/current_vel', self.current_vel_callback, 10)
+    
+        # CUDA 지원 여부 확인
+        if not cv2.cuda.getCudaEnabledDeviceCount():
+            self.get_logger().error("CUDA 지원되지 않음! CPU 모드로 동작합니다.")
+            self.cuda_available = False
+        else:
+            self.get_logger().info("✅ CUDA 사용 가능: GPU 가속 적용")
+            self.cuda_available = True
 
     def current_vel_callback(self, msg):
         self.v_curr = msg.linear.x
@@ -48,24 +56,28 @@ class DepthSubscriber(Node):
         try:
             cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
             
-            # GPU 메모리에 이미지 업로드
-            gpu_image = cv2.cuda_GpuMat()
-            gpu_image.upload(cv_image)
-            
-            # GPU에서 리사이징 (640x480)
-            gpu_resized = cv2.cuda.resize(gpu_image, (640, 480))
-            
-            # GPU에서 BGR -> GRAY 변환 (옵션, 필요 시 사용)
-            # gpu_gray = cv2.cuda.cvtColor(gpu_resized, cv2.COLOR_BGR2GRAY)
-            
-            # 다시 CPU로 다운로드
-            processed_image = gpu_resized.download()
-            
-            # OpenCV의 putText는 GPU 지원이 없으므로 CPU에서 처리
+            if self.cuda_available:
+                # GPU에 업로드
+                gpu_image = cv2.cuda_GpuMat()
+                gpu_image.upload(cv_image)
+                self.get_logger().info("✅ GPU로 이미지 업로드 완료")
+                
+                # GPU에서 리사이징 (640x480)
+                gpu_resized = cv2.cuda.resize(gpu_image, (640, 480))
+                self.get_logger().info("✅ GPU에서 리사이징 완료")
+                
+                # 다시 CPU로 다운로드
+                processed_image = gpu_resized.download()
+                self.get_logger().info("✅ GPU에서 처리된 이미지 CPU로 다운로드 완료")
+            else:
+                self.get_logger().info("⚠️ CUDA 사용 불가: CPU에서 리사이징 수행")
+                processed_image = cv2.resize(cv_image, (640, 480))
+                
+            # 텍스트 정보 추가 (CPU에서 처리)
             text = f"Depth: {self.center_distance:.2f} m"
             text1 = f"linear_x: {self.v_curr:.2f} m/s"
-            cv2.putText(processed_image, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
-            cv2.putText(processed_image, text1, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+            cv2.putText(processed_image, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            cv2.putText(processed_image, text1, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             
             cv2.imshow(self.window_name, processed_image)
             cv2.waitKey(1)

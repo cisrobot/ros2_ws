@@ -25,7 +25,8 @@ setup(
             'zed_depth = zed_data_logger.zed_depth:main',
             'zed_camera = zed_data_logger.zed_camera:main',
             'subscribe = zed_data_logger.subscribe:main',
-            'cmd_vel_publisher = zed_data_logger.cmd_vel_publisher:main'
+            'cmd_vel_publisher = zed_data_logger.cmd_vel_publisher:main',
+            'costmap_to_map = zed_data_logger.costmap_to_map:main'
         ],
     },
 )
