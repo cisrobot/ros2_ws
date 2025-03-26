@@ -1,3 +1,4 @@
+
 bt_navigator:
   ros__parameters:
     use_sim_time: false
@@ -86,7 +87,7 @@ controller_server:
       vx_max: 0.7
       vx_min: 0.0
       vy_max: 0.0
-      wz_max: 0.6
+      wz_max: 0.7
       ax_max: 0.5
       ax_min: -0.5
       ay_max: 3.0
@@ -104,7 +105,7 @@ controller_server:
         trajectory_step: 5
         time_step: 3
       AckermannConstraints:
-        min_turning_r: 0.9
+        min_turning_r: 1.0
       critics: ["ConstraintCritic", "CostCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
       ConstraintCritic:
         enabled: true
@@ -224,7 +225,7 @@ local_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 2.0
-        inflation_radius: 0.3 #0.2
+        inflation_radius: 0.4 #0.2
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: true
@@ -233,14 +234,14 @@ local_costmap:
         z_resolution: 0.05
         z_voxels: 16
         max_obstacle_height: 0.6
-        min_obstacle_height: 0.3
+        min_obstacle_height: 0.4
         mark_threshold: 0
         observation_sources: depth_camera
         depth_camera:
           topic: "/zed/zed_node/point_cloud/cloud_registered"
           max_obstacle_height: 0.6
-          min_obstacle_height: 0.3
-          clearing: true
+          min_obstacle_height: 0.4
+          clearing: false
           marking: true
           data_type: "PointCloud2"
           raytrace_max_range: 6.5
@@ -289,14 +290,14 @@ global_costmap:
         z_resolution: 0.1  # ✅ global costmap에서는 resolution을 높게 설정해야 CPU 부담 감소
         z_voxels: 10  # ✅ global_costmap이므로 voxel 수를 줄여서 연산량 감소
         max_obstacle_height: 0.6
-        min_obstacle_height: 0.3
+        min_obstacle_height: 0.4
         mark_threshold: 0
         observation_sources: depth_camera
         depth_camera:
           topic: "/zed/zed_node/point_cloud/cloud_registered"
           max_obstacle_height: 0.6
-          min_obstacle_height: 0.3
-          clearing: true
+          min_obstacle_height: 0.4
+          clearing: false
           marking: true
           data_type: "PointCloud2"
           raytrace_max_range: 6.5
@@ -306,7 +307,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 2.0
-        inflation_radius: 0.3
+        inflation_radius: 0.4
       always_send_full_costmap: true
 
 map_server:
@@ -358,7 +359,7 @@ planner_server:
       angle_quantization_bins: 64         # For Hybrid nodes: Number of angle bins for search, must be 1 for 2D node (no angle search)
       analytic_expansion_ratio: 3.5       # For Hybrid/Lattice nodes: The ratio to attempt analytic expansions during search for final approach.
       analytic_expansion_max_length: 4.5    # For Hybrid/Lattice nodes: The maximum length of the analytic expansion to be considered valid to prevent unsafe shortcutting (in meters). This should be scaled with minimum turning radius and be no less than 4-5x the minimum radius
-      minimum_turning_radius: 0.9         # For Hybrid/Lattice nodes: minimum turning radius in m of path / vehicle
+      minimum_turning_radius: 1.0         # For Hybrid/Lattice nodes: minimum turning radius in m of path / vehicle
       reverse_penalty: 1000.0                # For Reeds-Shepp model: penalty to apply if motion is reversing, must be => 1
       change_penalty: 0.0                 # For Hybrid nodes: penalty to apply if motion is changing directions, must be >= 0
       non_straight_penalty: 1.20          # For Hybrid nodes: penalty to apply if motion is non-straight, must be => 1
@@ -414,8 +415,8 @@ behavior_server:
     transform_tolerance: 0.1
     use_sim_time: false
     simulate_ahead_time: 2.0
-    max_rotational_vel: 0.6
-    min_rotational_vel: -0.6
+    max_rotational_vel: 0.7
+    min_rotational_vel: -0.7
     rotational_acc_lim: 0.5
 
 robot_state_publisher:
@@ -435,13 +436,13 @@ waypoint_follower:
 
 velocity_smoother:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: false
 
     smoothing_frequency: 5.0
     scale_velocities: False
     feedback: "OPEN_LOOP"
-    max_velocity: [1.0, 0.0, 0.6]
-    min_velocity: [0.0, 0.0, -0.6]
+    max_velocity: [0.7, 0.0, 0.3]
+    min_velocity: [0.0, 0.0, -0.3]
     max_accel: [1.5, 0.0, 3.0]
     max_decel: [-1.5, 0.0, -3.0]
     # used in the CLOSED_LOOP feedback mode

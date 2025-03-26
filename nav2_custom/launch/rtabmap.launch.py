@@ -243,7 +243,7 @@ def launch_setup(context, *args, **kwargs):
             condition=IfCondition(LaunchConfiguration('icp_odometry')),
             parameters=[{
                 "frame_id": LaunchConfiguration('frame_id'),
-                "odom_frame_id": LaunchConfiguration('vo_frame_id'),
+                "odom_frame_id": LaunchConfiguration('odom_frame_id'),
                 "publish_tf": LaunchConfiguration('publish_tf_odom'),
                 "ground_truth_frame_id": LaunchConfiguration('ground_truth_frame_id').perform(context),
                 "ground_truth_base_frame_id": LaunchConfiguration('ground_truth_base_frame_id').perform(context),
@@ -414,7 +414,7 @@ def generate_launch_description():
         DeclareLaunchArgument('stereo', default_value='false', description='Use stereo input instead of RGB-D.'),
 
         DeclareLaunchArgument('localization', default_value='false', description='Launch in localization mode.'),
-        DeclareLaunchArgument('rtabmap_viz',  default_value='false',  description='Launch RTAB-Map UI (optional).'),
+        DeclareLaunchArgument('rtabmap_viz',  default_value='true',  description='Launch RTAB-Map UI (optional).'),
         DeclareLaunchArgument('rviz',         default_value='false', description='Launch RVIZ (optional).'),
 
         DeclareLaunchArgument('use_sim_time', default_value='false', description='Use simulation (Gazebo) clock if true'),
@@ -457,9 +457,9 @@ def generate_launch_description():
         DeclareLaunchArgument('camera_info_topic',   default_value='/zed/zed_node/rgb/camera_info',            description=''),
         
         # Stereo related topics
-        DeclareLaunchArgument('stereo_namespace',        default_value='/zed/zed_node', description=''),
+        DeclareLaunchArgument('stereo_namespace',        default_value='/stereo_camera', description=''),
         DeclareLaunchArgument('left_image_topic',        default_value=[LaunchConfiguration('stereo_namespace'), '/left/image_rect_color'], description=''),
-        DeclareLaunchArgument('right_image_topic',       default_value=[LaunchConfiguration('stereo_namespace'), '/right/image_rect_color'], description='Use grayscale image for efficiency'),
+        DeclareLaunchArgument('right_image_topic',       default_value=[LaunchConfiguration('stereo_namespace'), '/right/image_rect'], description='Use grayscale image for efficiency'),
         DeclareLaunchArgument('left_camera_info_topic',  default_value=[LaunchConfiguration('stereo_namespace'), '/left/camera_info'], description=''),
         DeclareLaunchArgument('right_camera_info_topic', default_value=[LaunchConfiguration('stereo_namespace'), '/right/camera_info'], description=''),
         
@@ -471,20 +471,20 @@ def generate_launch_description():
         DeclareLaunchArgument('depth_scale',      default_value='1.0',        description=''),
         
         # Image topic compression
-        DeclareLaunchArgument('compressed',            default_value='true', description='If you want to subscribe to compressed image topics'),
+        DeclareLaunchArgument('compressed',            default_value='false', description='If you want to subscribe to compressed image topics'),
         DeclareLaunchArgument('rgb_image_transport',   default_value='compressed', description='Common types: compressed, theora (see "rosrun image_transport list_transports")'),
         DeclareLaunchArgument('depth_image_transport', default_value='compressedDepth', description='Depth compatible types: compressedDepth (see "rosrun image_transport list_transports")'),
        
         # LiDAR
         DeclareLaunchArgument('subscribe_scan',       default_value='false',       description=''),
         DeclareLaunchArgument('scan_topic',           default_value='/scan',       description=''),
-        DeclareLaunchArgument('subscribe_scan_cloud', default_value='false',       description=''),
+        DeclareLaunchArgument('subscribe_scan_cloud', default_value='true',       description=''),
         DeclareLaunchArgument('scan_cloud_topic',     default_value='/zed/zed_node/point_cloud/cloud_registered', description=''),
         DeclareLaunchArgument('scan_normal_k',        default_value='0',           description=''),
         
         # Odometry
-        DeclareLaunchArgument('visual_odometry',            default_value='true',  description='Launch rtabmap visual odometry node.'),
-        DeclareLaunchArgument('icp_odometry',               default_value='false', description='Launch rtabmap icp odometry node.'),
+        DeclareLaunchArgument('visual_odometry',            default_value='false',  description='Launch rtabmap visual odometry node.'),
+        DeclareLaunchArgument('icp_odometry',               default_value='true', description='Launch rtabmap icp odometry node.'),
         DeclareLaunchArgument('odom_topic',                 default_value='/odometry/filtered',  description='Odometry topic name.'),
         DeclareLaunchArgument('vo_frame_id',                default_value=LaunchConfiguration('odom_topic'), description='Visual/Icp odometry frame ID for TF.'),
         DeclareLaunchArgument('publish_tf_odom',            default_value='false',  description=''),

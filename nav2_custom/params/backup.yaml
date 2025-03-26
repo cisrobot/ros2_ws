@@ -1,11 +1,12 @@
+
 bt_navigator:
   ros__parameters:
-    use_sim_time: false
+    use_sim_time: true
     global_frame: odom
     robot_base_frame: base_link
     odom_topic:  /odometry/filtered
-    bt_loop_duration: 15
-    default_server_timeout: 25
+    bt_loop_duration: 10
+    default_server_timeout: 20
     wait_for_service_timeout: 1000
     # 'default_nav_through_poses_bt_xml' and 'default_nav_to_pose_bt_xml' are use defaults:
     # nav2_bt_navigator/navigate_to_pose_w_replanning_and_recovery.xml
@@ -62,177 +63,263 @@ bt_navigator:
 
 bt_navigator_navigate_through_poses_rclcpp_node:
   ros__parameters:
-    use_sim_time: false
+    use_sim_time: true
 
 bt_navigator_navigate_to_pose_rclcpp_node:
   ros__parameters:
-    use_sim_time: false
+    use_sim_time: true
+
 
 controller_server:
   ros__parameters:
-    use_sim_time: False
-    controller_frequency: 15.0  # 컨트롤러 실행 주기
-    min_x_velocity_threshold: 0.001
-    min_y_velocity_threshold: 0.0  # 애커만 스티어링은 Y축 이동 없음
-    min_theta_velocity_threshold: 0.001
-    failure_tolerance: 0.3  # 장애물 회피 실패 시 재시도 허용 오차
-
-    progress_checker_plugin: "progress_checker"
-    goal_checker_plugins: ["general_goal_checker"]
-    controller_plugins: ["FollowPath"]
-
-    # 경로 진행 체크 설정
-    progress_checker:
-      plugin: "nav2_controller::SimpleProgressChecker"
-      required_movement_radius: 0.3  # 목표 이동 거리
-      movement_time_allowance: 8.0  # 최대 허용 정체 시간
-
-    # 목표 지점 도달 체크 설정
-    general_goal_checker:
-      stateful: True
-      plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.2  # 목표 도달 허용 오차
-      yaw_goal_tolerance: 0.2
-
-    # 🚀 Regulated Pure Pursuit (RPP) 컨트롤러 설정
+    allow_reverse: false
+    controller_frequency: 30.0
+    goal_tolerance: 0.5
+    yaw_goal_tolerance: 0.5
     FollowPath:
-      plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
-      
-      # 속도 설정
-      desired_linear_vel: 0.4  # 최대 속도 (0.3m/s)
-      min_linear_velocity: 0.1  # 최소 속도 (정지 방지)
-      max_angular_velocity: 0.4  # 최대 회전 속도
-      min_angular_velocity: -0.4  # 최소 회전 속도
-      
-      # 회전 반경 설정 (애커만 스티어링 차량에 필수)
-      lookahead_dist : 1.2
-      use_velocity_scaled_lookahead_dist: false  # 속도 기반 lookahead 거리 조정
-      min_lookahead_dist: 0.6  # 최소 전방 주시 거리
-      max_lookahead_dist: 1.5  # 최대 전방 주시 거리
-      lookahead_time: 2.5  # 속도 기반 lookahead 시간
+      plugin: "nav2_mppi_controller::MPPIController" # model predict path integral controller
+      time_steps: 56
+      model_dt: 0.05 #56*0.05 = 2.8 sec 동안 경로 예측
+      batch_size: 2000
+      vx_std: 0.2 #샘플링
+      vy_std: 0.0
+      wz_std: 0.4
+      vx_max: 0.7
+      vx_min: 0.0
+      vy_max: 0.0
+      wz_max: 0.7
+      ax_max: 0.5
+      ax_min: -0.5
+      ay_max: 3.0
+      az_max: 3.5
+      iteration_count: 1
+      prune_distance: 1.7
+      transform_tolerance: 0.5
+      temperature: 0.3
+      gamma: 0.015
+      motion_model: "Ackermann"
+      visualize: true
+      reset_period: 1.0 # (only in Humble)
+      regenerate_noises: false
+      TrajectoryVisualizer:
+        trajectory_step: 5
+        time_step: 3
+      AckermannConstraints:
+        min_turning_r: 1.0
+      critics: ["ConstraintCritic", "CostCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
+      ConstraintCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 4.0
+      GoalCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        threshold_to_consider: 1.4
+      GoalAngleCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 3.0
+        threshold_to_consider: 0.5
+      PreferForwardCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        threshold_to_consider: 0.5
+      # ObstaclesCritic:
+      #   enabled: true
+      #   cost_power: 1
+      #   repulsion_weight: 1.5
+      #   critical_weight: 20.0
+      #   consider_footprint: false
+      #   collision_cost: 10000.0
+      #   collision_margin_distance: 0.1
+      #   near_goal_distance: 0.5
+      #   inflation_radius: 0.55 # (only in Humble)
+      #   cost_scaling_factor: 10.0 # (only in Humble)
+      CostCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 3.81
+        critical_cost: 300.0
+        consider_footprint: true
+        collision_cost: 1000000.0
+        near_goal_distance: 1.0
+        trajectory_point_step: 2
+      PathAlignCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 14.0
+        max_path_occupancy_ratio: 0.05
+        trajectory_point_step: 4
+        threshold_to_consider: 0.5
+        offset_from_furthest: 20
+        use_path_orientations: false
+      PathFollowCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        offset_from_furthest: 5
+        threshold_to_consider: 1.4
+      PathAngleCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 2.0
+        offset_from_furthest: 4
+        threshold_to_consider: 0.5
+        max_angle_to_furthest: 1.0
+        mode: 0
+      # VelocityDeadbandCritic:
+      #   enabled: true
+      #   cost_power: 1
+      #   cost_weight: 35.0
+      #   deadband_velocities: [0.05, 0.05, 0.05]
+      # TwirlingCritic:
+      #   enabled: true
+      #   twirling_cost_power: 1
+      #   twirling_cost_weight: 10.0
 
-      # 장애물 회피 설정
-      regulate_linear_velocity: true  # 장애물 근처에서 속도 조절
-      inflation_radius: 0.4  # 장애물과의 최소 거리
-      use_collision_detection: true  # 충돌 감지 활성화
-      approach_velocity_scaling_dist: 0.7  # 목표 지점 접근 시 감속 거리
-      transform_tolerance: 0.3
+
+controller_server_rclcpp_node:
+  ros__parameters:
+    use_sim_time: true
+
+
 
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 5.0  # 초당 5회 costmap 업데이트 (값이 높을수록 반응 속도 ↑, CPU 부하 ↑)
-      publish_frequency: 2.0  # 초당 2회 costmap을 퍼블리시 (디버깅 시 더 높일 수 있음)
-      global_frame: odom  # Costmap이 odom 프레임을 기준으로 생성됨 (로컬 costmap이므로 odom이 적절함)
-      robot_base_frame: base_link  # 로봇의 기준 프레임 (기본적으로 `base_link` 사용)
-      use_sim_time: false  # 실제 환경에서는 false, 시뮬레이션 사용 시 true
-      rolling_window: true  # ✅ 로봇이 이동할 때 costmap이 함께 이동 (로컬 costmap에 필수)
-      width: 10  # Costmap 너비 (10m)
-      height: 10  # Costmap 높이 (10m)
-      resolution: 0.05  # Costmap 해상도 (0.05m/grid, 값이 작을수록 정밀도 ↑, CPU 부하 ↑)
-      robot_radius: 0.3  # 로봇의 반경 (애커만 스티어링 차량에 맞게 설정)
-
-      # ✅ Costmap에 사용할 플러그인 (Voxel Layer + Inflation Layer 조합)
+      update_frequency: 5.0 #5.0
+      publish_frequency: 2.0 #2.0
+      global_frame: odom
+      robot_base_frame: base_link
+      use_sim_time: true
+      rolling_window: true
+      width: 10
+      height: 10
+      resolution: 0.05
+      robot_radius: 0.3
       plugins: ["voxel_layer", "inflation_layer"]     
-
-      # 🚀 장애물 감지를 위한 Voxel Layer 설정
-      voxel_layer:
-        plugin: "nav2_costmap_2d::VoxelLayer"
-        enabled: true  # Voxel Layer 활성화 (3D 장애물 감지 지원)
-        publish_voxel_map: false  # ✅ 디버깅 시 true로 설정 가능 (Voxel Map을 Rviz에서 확인 가능)
-        origin_z: 0.0  # Costmap의 시작 z축 위치
-        z_resolution: 0.05  # Z축 방향 해상도 (더 작으면 정밀도 증가)
-        z_voxels: 16  # Z축으로 몇 개의 계층을 사용할지 (높을수록 정밀하지만 CPU 부담 증가)
-        max_obstacle_height: 0.6  # 장애물의 최대 높이 (0.6m 이상은 감지 X)
-        min_obstacle_height: 0.2  # 장애물의 최소 높이 (0.2m 미만은 감지 X)
-        mark_threshold: 0  # 장애물을 감지하는 임계값 (0이면 즉시 장애물로 인식)
-        observation_sources: depth_camera  # 센서에서 얻은 데이터를 사용
-
-        # 🚀 ZED XM 카메라의 포인트 클라우드를 사용하여 장애물 감지
-        depth_camera:
-          topic: "/zed/zed_node/point_cloud/cloud_registered"  # 포인트 클라우드 데이터 토픽
-          max_obstacle_height: 0.6  # 감지할 장애물의 최대 높이
-          min_obstacle_height: 0.3  # 감지할 장애물의 최소 높이
-          clearing: true  # 장애물이 사라지면 costmap에서 제거
-          marking: true  # 장애물이 감지되면 costmap에 추가
-          data_type: "PointCloud2"  # 데이터 형식 (ZED 카메라는 PointCloud2 사용)
-          raytrace_max_range: 5.0  # 최대 레이 트레이싱 거리 (장애물 감지 범위)
-          raytrace_min_range: 0.0  # 최소 레이 트레이싱 거리
-          obstacle_max_range: 3.0  # 장애물 감지 최대 거리
-          obstacle_min_range: 0.0  # 장애물 감지 최소 거리
-
-      # 🚀 장애물 근처에서 회피 경로를 생성하는 Inflation Layer 설정
+      #plugins: ["obstacle_layer", "inflation_layer"]
+      # obstacle_layer:
+      #   plugin: "nav2_costmap_2d::ObstacleLayer"
+      #   enabled: true
+      #   observation_sources: depth_camera
+      #   depth_camera:
+      #     topic: "/zed/zed_node/point_cloud/cloud_registered"
+      #     #max_obstacle_height: 0.5
+      #     max_obstacle_height: 0.8 
+      #     #min_obstacle_height: 0.12 #
+      #     min_obstacle_height: 0.2
+      #     clearing: true
+      #     marking: true
+      #     data_type: "PointCloud2"
+      #     raytrace_max_range: 3.0
+      #     #raytrace_max_range: 2.0
+      #     raytrace_min_range: 0.0
+      #     #raytrace_min_range: 0.0
+      #     obstacle_max_range: 3.0
+      #     #obstacle_max_range: 2.5
+      #     obstacle_min_range: 0.0
+      #     #obstacle_min_range: 0.0 
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 2.0  # 장애물에 가까울수록 cost 값이 높아지는 속도
-        inflation_radius: 0.2  # 장애물 주변에 영향을 미치는 반경 (0.6m)
-
-      always_send_full_costmap: true  # Costmap 전체를 퍼블리시 (true로 설정해야 안정적)
+        cost_scaling_factor: 2.0
+        inflation_radius: 0.4 #0.2
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: true
+        publish_voxel_map: false
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 0.6
+        min_obstacle_height: 0.4
+        mark_threshold: 0
+        observation_sources: depth_camera
+        depth_camera:
+          topic: "/zed/zed_node/point_cloud/cloud_registered"
+          max_obstacle_height: 0.6
+          min_obstacle_height: 0.4
+          clearing: false
+          marking: true
+          data_type: "PointCloud2"
+          raytrace_max_range: 6.5
+          raytrace_min_range: 0.0
+          obstacle_max_range: 3.5
+          obstacle_min_range: 0.0
+      always_send_full_costmap: true
 
 global_costmap:
   global_costmap:
     ros__parameters:
-      update_frequency: 5.0  # 초당 5회 costmap 업데이트 (경로 탐색을 빠르게 반영)
-      publish_frequency: 2.0  # 초당 2회 costmap을 퍼블리시
-      global_frame: odom  # 글로벌 costmap도 odom 기준으로 설정 (Map 프레임이 없으므로 적절)
-      robot_base_frame: base_link  # 로봇의 기준 프레임
-      use_sim_time: false  # 실제 환경에서는 false
-      robot_radius: 0.3  # 로봇 반경
-
-      resolution: 0.1  # ✅ 글로벌 costmap 해상도 (0.1m/grid, 로컬보다 낮게 설정하여 CPU 부담 감소)
-      width: 100  # Costmap 너비 (100m)
-      height: 100  # Costmap 높이 (100m)
-      origin_x: -10.0  # 글로벌 costmap의 시작 X 좌표
-      origin_y: -10.0  # 글로벌 costmap의 시작 Y 좌표
-      track_unknown_space: true  # ✅ 탐색되지 않은 공간을 costmap에 반영
-
-      # ✅ Costmap에 사용할 플러그인 (Voxel Layer + Inflation Layer 조합)
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: odom
+      robot_base_frame: base_link
+      use_sim_time: true
+      robot_radius: 0.3
+      resolution: 0.1
+      width: 100
+      height: 100
+      origin_x: -10.0  # X축 시작 좌표
+      origin_y: -10.0  # Y축 시작 좌표
+      track_unknown_space: true
       plugins: ["voxel_layer", "inflation_layer"]
-
-      # 🚀 장애물 감지를 위한 Voxel Layer 설정
+      #plugins: ["obstacle_layer", "inflation_layer"]
+      # obstacle_layer:
+      #   plugin: "nav2_costmap_2d::ObstacleLayer"
+      #   enabled: true
+      #   observation_sources: depth_camera
+      #   depth_camera:
+      #     topic: "/zed/zed_node/point_cloud/cloud_registered"
+      #     max_obstacle_height: 1.2
+      #     min_obstacle_height: 0.2
+      #     clearing: true
+      #     marking: true
+      #     data_type: "PointCloud2"
+      #     raytrace_max_range: 3.0
+      #     raytrace_min_range: 0.0
+      #     obstacle_max_range: 2.0
+      #     obstacle_min_range: 0.0
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
-        enabled: true  # Voxel Layer 활성화
-        publish_voxel_map: false  # ✅ 디버깅 시 true로 변경 가능
-        origin_z: 0.0  # Costmap의 시작 z축 위치
-        z_resolution: 0.1  # ✅ 글로벌 costmap에서는 해상도를 줄여서 CPU 부담 감소
-        z_voxels: 10  # ✅ 글로벌 costmap이므로 voxel 수를 줄여서 연산량 감소
-        max_obstacle_height: 0.6  # 장애물의 최대 높이
-        min_obstacle_height: 0.3  # 장애물의 최소 높이
-        mark_threshold: 0  # 장애물을 감지하는 임계값
+        enabled: true
+        publish_voxel_map: false  # ✅ 디버깅이 필요하면 true로 변경
+        origin_z: 0.0
+        z_resolution: 0.1  # ✅ global costmap에서는 resolution을 높게 설정해야 CPU 부담 감소
+        z_voxels: 10  # ✅ global_costmap이므로 voxel 수를 줄여서 연산량 감소
+        max_obstacle_height: 0.6
+        min_obstacle_height: 0.4
+        mark_threshold: 0
         observation_sources: depth_camera
-
-        # 🚀 글로벌 costmap에서 장애물 감지를 위한 포인트 클라우드 설정
         depth_camera:
           topic: "/zed/zed_node/point_cloud/cloud_registered"
           max_obstacle_height: 0.6
-          min_obstacle_height: 0.3
-          clearing: true
+          min_obstacle_height: 0.4
+          clearing: false
           marking: true
           data_type: "PointCloud2"
-          raytrace_max_range: 5.0  # ✅ 글로벌 costmap에서 장애물 감지 범위를 늘려 넓은 지역 탐색 가능
+          raytrace_max_range: 6.5
           raytrace_min_range: 0.0
-          obstacle_max_range: 3.0
+          obstacle_max_range: 3.5
           obstacle_min_range: 0.0
-
-      # 🚀 장애물 회피를 위한 Inflation Layer 설정
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 2.0  # 장애물 가까이 갈수록 cost가 높아지는 속도
-        inflation_radius: 0.2  # 장애물 주변에 영향을 미치는 반경
-
-      always_send_full_costmap: true  # Costmap 전체를 퍼블리시하여 일관성 유지
+        cost_scaling_factor: 2.0
+        inflation_radius: 0.4
+      always_send_full_costmap: true
 
 map_server:
   ros__parameters:
-    use_sim_time: false
+    use_sim_time: true
     # Overridden in launch by the "map" launch configuration or provided default value.
     # To use in yaml, remove the default "map" value in the tb3_simulation_launch.py file & provide full path to map below.
     yaml_filename: ""
 
 map_saver:
   ros__parameters:
-    use_sim_time: false
+    use_sim_time: true
     save_map_timeout: 5.0
     free_thresh_default: 0.25
     occupied_thresh_default: 0.65
@@ -251,51 +338,52 @@ map_saver:
       #use_astar: false  # A* 알고리즘 활성화 (기본적으로 Dijkstra 사용)
       #allow_unknown: true  # 알려지지 않은 지도 영역도 탐색 가능 (True면 미탐색 지역도 지나갈 수 있음)
 
+
 planner_server:
   ros__parameters:
+    goal_tolerance: 0.5
     planner_plugins: ["GridBased"]
-    use_sim_time: false
+    use_sim_time: true
 
     GridBased:
       plugin: "nav2_smac_planner/SmacPlannerHybrid"
-      downsample_costmap: false           
-      downsampling_factor: 1              
-      tolerance: 0.15                     
-      allow_unknown: true                 
-      max_iterations: 100000  # 기존 1000000 → 50000 (불필요한 재계산 줄임)
-      max_on_approach_iterations: 1000    
-      max_planning_time: 2.0  # 기존 5.0 → 1.5 (계획 시간 단축)
-      motion_model_for_search: "DUBIN"    
-      angle_quantization_bins: 72         
-      analytic_expansion_ratio: 1.5 # 기존 3.5 → 1.2 (불필요한 경로 변경 방지)
-      analytic_expansion_max_length: 3.0  
-      analytic_expansion_max_cost: 200.0  
-      analytic_expansion_max_cost_override: false  
-      minimum_turning_radius: 1.0        
-      reverse_penalty: 1000.0  # 기존 2.0 → 1000.0 (후진 절대 금지)
-      change_penalty: 0.0                 
-      non_straight_penalty: 1.2           
-      cost_penalty: 3.0                   
-      retrospective_penalty: 0.015
-      lookup_table_size: 20.0             
-      cache_obstacle_heuristic: true  # 기존 false → true (이전 경로 기억)
-      debug_visualizations: false         
-      use_quadratic_cost_penalty: False
-      downsample_obstacle_heuristic: True
-      allow_primitive_interpolation: Falses
-      smooth_path: True                   
-
+      tolerance: 0.5                      # tolerance for planning if unable to reach exact pose, in meters
+      downsample_costmap: false           # whether or not to downsample the map
+      downsampling_factor: 1              # multiplier for the resolution of the costmap layer (e.g. 2 on a 5cm costmap would be 10cm)
+      allow_unknown: true                # allow traveling in unknown space
+      max_iterations: 1000000             # maximum total iterations to search for before failing (in case unreachable), set to -1 to disable
+      max_on_approach_iterations: 1000    # maximum number of iterations to attempt to reach goal once in tolerance
+      max_planning_time: 3.5              # max time in s for planner to plan, smooth, and upsample. Will scale maximum smoothing and upsampling times based on remaining time after planning.
+      motion_model_for_search: "DUBIN"    # For Hybrid Dubin, Redds-Shepp
+      cost_travel_multiplier: 2.0         # For 2D: Cost multiplier to apply to search to steer away from high cost areas. Larger values will place in the center of aisles more exactly (if non-`FREE` cost potential field exists) but take slightly longer to compute. To optimize for speed, a value of 1.0 is reasonable. A reasonable tradeoff value is 2.0. A value of 0.0 effective disables steering away from obstacles and acts like a naive binary search A*.
+      angle_quantization_bins: 64         # For Hybrid nodes: Number of angle bins for search, must be 1 for 2D node (no angle search)
+      analytic_expansion_ratio: 3.5       # For Hybrid/Lattice nodes: The ratio to attempt analytic expansions during search for final approach.
+      analytic_expansion_max_length: 4.5    # For Hybrid/Lattice nodes: The maximum length of the analytic expansion to be considered valid to prevent unsafe shortcutting (in meters). This should be scaled with minimum turning radius and be no less than 4-5x the minimum radius
+      minimum_turning_radius: 1.0         # For Hybrid/Lattice nodes: minimum turning radius in m of path / vehicle
+      reverse_penalty: 1000.0                # For Reeds-Shepp model: penalty to apply if motion is reversing, must be => 1
+      change_penalty: 0.0                 # For Hybrid nodes: penalty to apply if motion is changing directions, must be >= 0
+      non_straight_penalty: 1.20          # For Hybrid nodes: penalty to apply if motion is non-straight, must be => 1
+      cost_penalty: 2.0                   # For Hybrid nodes: penalty to apply to higher cost areas when adding into the obstacle map dynamic programming distance expansion heuristic. This drives the robot more towards the center of passages. A value between 1.3 - 3.5 is reasonable.
+      retrospective_penalty: 0.025        # For Hybrid/Lattice nodes: penalty to prefer later maneuvers before earlier along the path. Saves search time since earlier nodes are not expanded until it is necessary. Must be >= 0.0 and <= 1.0
+      rotation_penalty: 1000.0               # For Lattice node: Penalty to apply only to pure rotate in place commands when using minimum control sets containing rotate in place primitives. This should always be set sufficiently high to weight against this action unless strictly necessary for obstacle avoidance or there may be frequent discontinuities in the plan where it requests the robot to rotate in place to short-cut an otherwise smooth path for marginal path distance savings.
+      lookup_table_size: 20.0               # For Hybrid nodes: Size of the dubin/reeds-sheep distance window to cache, in meters.
+      cache_obstacle_heuristic: True      # For Hybrid nodes: Cache the obstacle map dynamic programming distance expansion heuristic between subsiquent replannings of the same goal location. Dramatically speeds up replanning performance (40x) if costmap is largely static.  
+      allow_reverse_expansion: False      # For Lattice nodes: Whether to expand state lattice graph in forward primitives or reverse as well, will double the branching factor at each step.   
+      smooth_path: True                   # For Lattice/Hybrid nodes: Whether or not to smooth the path, always true for 2D nodes.
       smoother:
         max_iterations: 1000
         w_smooth: 0.3
         w_data: 0.2
         tolerance: 1.0e-10
-        do_refinement: true
-        refinement_num: 2
+        do_refinement: true               # Whether to recursively run the smoother 3 times on the results from prior runs to refine the results further
+
+planner_server_rclcpp_node:
+  ros__parameters:
+    use_sim_time: true
 
 smoother_server:
   ros__parameters:
-    use_sim_time: false
+    use_sim_time: true
     smoother_plugins: ["simple_smoother"]
     simple_smoother:
       plugin: "nav2_smoother::SimpleSmoother"
@@ -321,22 +409,23 @@ behavior_server:
       plugin: "nav2_behaviors/Wait"
     assisted_teleop:
       plugin: "nav2_behaviors/AssistedTeleop"
-    global_frame: odom
+    global_frame: map
+    local_frame: odom
     robot_base_frame: base_link
     transform_tolerance: 0.1
-    use_sim_time: false
+    use_sim_time: true
     simulate_ahead_time: 2.0
-    max_rotational_vel: 1.0
-    min_rotational_vel: -1.0
-    rotational_acc_lim: 0.0
+    max_rotational_vel: 0.7
+    min_rotational_vel: -0.7
+    rotational_acc_lim: 0.5
 
 robot_state_publisher:
   ros__parameters:
-    use_sim_time: false
+    use_sim_time: true
 
 waypoint_follower:
   ros__parameters:
-    use_sim_time: false
+    use_sim_time: true
     loop_rate: 20
     stop_on_failure: false
     waypoint_task_executor_plugin: "wait_at_waypoint"
@@ -346,15 +435,18 @@ waypoint_follower:
       waypoint_pause_duration: 200
 
 velocity_smoother:
-    ros__parameters:
-      use_sim_time: false
-      smoothing_frequency: 15.0  # 기존 50.0 → 30.0 (부드러운 속도 조정)
-      scale_velocities: false
-      feedback: "OPEN_LOOP"
-      max_velocity: [0.5, 0.0, 0.5]
-      min_velocity: [0.0, 0.0, -1.0]
-      max_accel: [0.1, 0.0, 0.2]  # 기존 1.0 → 0.8 (더 부드러운 가속)
-      max_decel: [-0.3, 0.0, -0.3]  # 기존 -1.0 → -0.8 (더 부드러운 감속)
-      odom_topic: "/odometry/filtered"
-      odom_duration: 0.1
-      deadband_velocity: [0.02, 0.0, 0.02]  # 기존 0.0 → 0.01 (미세한 진동 방지)
+  ros__parameters:
+    use_sim_time: true
+
+    smoothing_frequency: 5.0
+    scale_velocities: False
+    feedback: "OPEN_LOOP"
+    max_velocity: [0.7, 0.0, 0.3]
+    min_velocity: [0.0, 0.0, -0.3]
+    max_accel: [1.5, 0.0, 3.0]
+    max_decel: [-1.5, 0.0, -3.0]
+    # used in the CLOSED_LOOP feedback mode
+    odom_topic: "/odometry/filtered"
+    odom_duration: 0.1
+    deadband_velocity: [0.0, 0.0, 0.0]
+    velocity_timeout: 1.0
