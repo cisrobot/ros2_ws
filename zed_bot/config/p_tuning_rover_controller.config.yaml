@@ -1,0 +1,31 @@
+p_tuning_rover_controller:
+  ros__parameters:
+    # vel_group: 0  # Group 0: 0.5, 1.0, 1.5 / Group 1: 2.0, 2.5 / Group 2: 0.5, 1.5, 2.5
+    # vel_group: 1  # Group 0: 0.5, 1.0, 1.5 / Group 1: 2.0, 2.5 / Group 2: 0.5, 1.5, 2.5
+    vel_group: 2  # Group 0: 0.5, 1.0, 1.5 / Group 1: 2.0, 2.5 / Group 2: 0.5, 1.5, 2.5
+    log_enable: False
+    ard_enable: True
+    xbee_teleop_mode: True
+    ard_port: '/dev/arduino'
+    # odom_topic: '/odom_fwd'
+    odom_topic: '/odom_ekf'
+    log_period_sec: 0.1
+    rcv_period_sec: 0.03
+    control_period_sec: 0.05
+    wheelbase: 0.38
+    steer_rad_lim: 0.3631
+    steer_pwm_center: 1477
+    steer_pwm_gap: 300
+    control_cap_ratio: 20
+    v_pwm_stop: 1530
+    v_pwm_min: 1561
+    v_pwm_max: 1588
+    v_pwm_bwd_min: 1500
+    v_pwm_bwd_max: 1460
+    v_min: 0.5    # m/s
+    v_max: 2.5    # m/s
+    v_bwd_min: -0.2    # m/s
+    v_bwd_max: -0.8    # m/s
+    w_min: 0.05    # rad/s
+    p_gain: 1.5
+    d_gain: 0.15

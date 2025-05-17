@@ -1,0 +1,35 @@
+rover_controller:
+  ros__parameters:
+    ard_enable: True
+    ard_port: '/dev/arduino'
+    # odom_topic: '/odom_fwd'
+    odom_topic: '/odom_ekf'
+
+    vel_alpha: 0.7
+    log_period_sec: 0.1
+    rcv_period_sec: 0.02
+    control_period_sec: 0.05
+    wheelbase: 0.38
+    steer_rad_lim: 0.3631
+    steer_pwm_center: 1477
+    steer_pwm_gap: 300
+    control_cap_ratio: 20
+    v_pwm_stop: 1530
+    v_pwm_min: 1561
+    v_pwm_max: 1585
+    v_pwm_bwd_min: 1510
+    v_pwm_bwd_max: 1460
+    v_min: 0.4    # m/s
+    v_max: 2.8    # m/s
+    v_bwd_min: -0.2    # m/s
+    v_bwd_max: -0.8    # m/s
+    w_min: 0.05    # rad/s
+    
+    p_min: 0.1
+    p_max: 3.5
+    p_scaler: 5.0
+
+    d_min: 0.05
+    d_max: 0.35
+    d_scaler: 5.0
+    

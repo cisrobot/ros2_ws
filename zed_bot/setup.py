@@ -22,9 +22,16 @@ setup(
     maintainer_email='cchyun@todo.todo',
     description='TODO: Package description',
     license='TODO: License declaration',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'p_tuning_rover_controller = zed_bot.p_tuning_rover_controller:main',
+            'theta_meas_rover_controller = zed_bot.theta_meas_rover_controller:main',
+            'reg_rover_controller = zed_bot.reg_rover_controller:main',
+            'rover_controller = zed_bot.rover_controller:main',
+            'imu_base_meas = zed_bot.imu_base_meas:main',
+            'vio_base_meas = zed_bot.vio_base_meas:main',
+            'odom_publisher = zed_bot.odom_publisher:main',
+            'data_logger = zed_bot.data_logger:main',
         ],
     },
 )

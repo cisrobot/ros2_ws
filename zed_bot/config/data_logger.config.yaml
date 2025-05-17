@@ -1,0 +1,5 @@
+data_logger:
+  ros__parameters:
+    log_fwd_odom: False
+    log_bwd_odom: False
+    log_ekf_odom: True

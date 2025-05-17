@@ -1,0 +1,16 @@
+fwd_vio_base_meas:
+  ros__parameters:
+    sub_topic: '/zed_multi/zedxm_fwd/odom'
+    pub_topic: '/odom_fwd'
+    frame_id: 'odom'
+    cam_frame_id: 'zedxm_fwd_camera_link'    
+    lookup_child_frame_id: 'base_link'
+    broadcast_child_frame_id: 'base_link_fwd'
+    # publish_tf: False
+    publish_tf: True
+    smoothing_factor: 0.5
+    v_fwd_max: 3.0
+    v_bwd_max: -1.0
+    vy_thres: 0.5
+    w_max: 3.0
+    v_magnitude_min: 0.05

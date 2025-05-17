@@ -1,0 +1,11 @@
+cmd_vel_lim:
+  ros__parameters:
+    sub_topic: '/ps5_joy/cmd_vel'
+    pub_topic: '/cmd_vel'
+    v_fwd_max: 2.5
+    v_bwd_max: -0.8
+    differential_drive: False
+    wheelbase: 0.38
+    steer_rad_lim: 0.3631 
+    w_fwd_max: 1.0
+    w_bwd_max: 1.0
